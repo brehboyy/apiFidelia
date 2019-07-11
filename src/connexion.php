@@ -2,11 +2,6 @@
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PATCH, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Origin, Content-Type, X-Auth-Token');
-/*
-$host = "lemaniockvpersis.mysql.db";
-$user = "lemaniockvpersis";
-$password = "Streete58";
-$dbname = "lemaniockvpersis";*/
 
 $host = "localhost";
 $user = "root";
