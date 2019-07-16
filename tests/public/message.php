@@ -228,6 +228,25 @@ $app->get('/sendMessage/{str}/', function (Request $request, Response $response,
     return $response;*/
 });
 
+ $app->get('/envoyer', function (Request $request, Response $response, array $args) use ($pdo) {
+    
+    try{
+        $to      = 'personne@example.com';
+        $subject = 'le sujet';
+        $message = 'Bonjour !';
+        $headers = 'From: webmaster@example.com' . "\r\n" .
+        'Reply-To: webmaster@example.com' . "\r\n" .
+        'X-Mailer: PHP/' . phpversion();
+   
+        mail($to, $subject, $message, $headers);
+        $response = array('success' => true, 'message' => "Le mail a été envoyé");
+    
+    }catch(Exception $e){
+        $response = array('success' => false, 'message' => $e->getMessage());
+    }
+    return $response;
+});
+
 
 
 
