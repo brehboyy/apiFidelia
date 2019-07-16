@@ -129,10 +129,9 @@ $app->post('/get', function (Request $request, Response $response, array $args) 
 });
 
 $app->post('/signup', function (Request $request, Response $response, array $args) use ($pdo) {
-    $postdata = file_get_contents("php://input");
     try{
         if (isset($_POST['nom']) && isset($_POST['prenom']) && isset($_POST['email']) && isset($_POST['fonction']) && isset($_POST['login']) && isset($_POST['password']) && isset($_POST['type'])) {
-            $request = json_decode($postdata);
+            
             $nom = $_POST['nom'];
             $prenom = $_POST['prenom'];
             $email = $_POST['email'];
@@ -156,7 +155,7 @@ $app->post('/signup', function (Request $request, Response $response, array $arg
                 $query = $pdo->prepare("INSERT INTO `utilisateur` (`ID_Utilisateur`, `Nom_Utilisateur`, `Prenom_Utilisateur`, `Adresse_Mail_Utilisateur`, `Fonction_Utilisateur`, `Login_Utilisateur`, `Password_Utilisateur`, `Type_Utilisateur`) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)");
                 $options =  array('cost' => 11);
                 $hash = password_hash($password, PASSWORD_BCRYPT, $options);
-                $query->execute(array($nom, $prenom, $email, $fonction, $login, $password, $type));
+                $query->execute(array($nom, $prenom, $email, $fonction, $login, $hash, $type));
 
                 if(!$query)
                 {
