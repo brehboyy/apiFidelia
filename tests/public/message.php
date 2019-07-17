@@ -61,7 +61,7 @@ $app->post('/insertProgrammation', function (Request $request, Response $respons
 
 $app->get('/getall', function (Request $request, Response $response, array $args) use ($pdo) {
     try{
-		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message FROM modele_message');//->execute(array($name,$password));
+		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Template_Modele_Message, Template_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message FROM modele_message');//->execute(array($name,$password));
 		$contenu->execute();
         $liste = $contenu->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode(array('success' => true, 'message' => 'recuperation reussi', 'result' => $liste));
@@ -75,13 +75,13 @@ $app->get('/getall', function (Request $request, Response $response, array $args
 $app->get('/GetById/{Id}', function (Request $request, Response $response, array $args) use ($pdo) {
     try{
         $Id = $args['Id'];
-		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message FROM modele_message m  WHERE m.ID_Modele_Message = ?');
+		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Template_Modele_Message, Template_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message FROM modele_message m  WHERE m.ID_Modele_Message = ?');
 		$contenu->execute(array($Id));
         $liste = $contenu->fetchAll(PDO::FETCH_ASSOC);
-        $response = array('success' => true, 'message' => "modele de message par identifiant", 'result' => $liste);
+        echo json_encode(array('success' => true, 'message' => 'recuperation reussi', 'result' => $liste));
         
     }catch(Exception $e){
-        $response = array('success' => false, 'message' => $e->getMessage(), 'result' => $liste);
+        echo json_encode(array('success' => false, 'message' => $e->getMessage()));
     }
     return $response;
 });
