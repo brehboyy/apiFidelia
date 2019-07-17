@@ -30,7 +30,6 @@ $app->get('/hello/{name}', function (Request $request, Response $response, array
 $app->get('/getall', function (Request $request, Response $response, array $args) use ($pdo) {
   
     try{
-        $message = json_decode($_POST['message']);
         $contenu = $pdo->prepare('SELECT table_name as nom_table FROM information_schema.tables where table_schema= ? ');//->execute(array($name,$password));
         $contenu->execute(array('fidelia'));
         $liste = $contenu->fetchAll(PDO::FETCH_ASSOC);
