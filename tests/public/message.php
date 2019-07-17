@@ -189,6 +189,20 @@ $app->post('/sendMessage', function (Request $request, Response $response, array
     return $response;*/
 });
 
+$app->post('/delete', function (Request $request, Response $response, array $args) use ($pdo) {
+    if(isset($_POST['id'])){
+        try{
+            $id = intval($_POST['id']);
+            $contenu = $pdo->prepare('DELETE FROM `modele_message` WHERE ID_Modele_Message=?');//->execute(array($name,$password));
+            $contenu->execute(array($id));
+
+            echo json_encode(array('success' => true, "message" => $_POST['table']. ' supprimé'));
+        }catch(Exception $e){
+            echo json_encode(array('success' => false, 'message' => $e->getMessage()));
+        }
+    } 
+});
+
 
 
 $app->get('/sendMessage/{str}/', function (Request $request, Response $response, array $args) use ($pdo) {
@@ -205,10 +219,6 @@ $app->get('/sendMessage/{str}/', function (Request $request, Response $response,
         $lastPos = $lastPos + strlen($needle);
     }
 
-    
-
-    echo $str."<br />";
-
     // Displays 3 and 10
     $liste = array();
     for($i = 0 ; $i < count($positions) ; $i++){
@@ -216,14 +226,6 @@ $app->get('/sendMessage/{str}/', function (Request $request, Response $response,
 		$contenu->execute(array(strtoupper(get_string_between(substr ( $str, $positions[$i], ($i == count($positions) - 1) ? strlen($str) - $positions[$i] : $positions[$i + 1] - $positions[$i] ), "{{", "}}"))));
         $res = $contenu->fetchAll(PDO::FETCH_ASSOC);
         array_push($liste, $res[0]);
-    }
-
-    // tageule{{Nom_Client}}sdkflsd{{Prenom_Client}}kdsfjks,d{{Nom_Tag}}dkdsdfkodsio{{Nom_Commande}}
-    var_dump($liste);
-
-
-    foreach ($positions as $value) {
-        echo $value ."<br />";
     }
 
     /*
@@ -242,6 +244,25 @@ $app->get('/sendMessage/{str}/', function (Request $request, Response $response,
         }
     }
     return $response;*/
+});
+
+ $app->get('/envoyer', function (Request $request, Response $response, array $args) use ($pdo) {
+    
+    try{
+        $to      = 'personne@example.com';
+        $subject = 'le sujet';
+        $message = 'Bonjour !';
+        $headers = 'From: webmaster@example.com' . "\r\n" .
+        'Reply-To: webmaster@example.com' . "\r\n" .
+        'X-Mailer: PHP/' . phpversion();
+   
+        mail($to, $subject, $message, $headers);
+        $response = array('success' => true, 'message' => "Le mail a été envoyé");
+    
+    }catch(Exception $e){
+        $response = array('success' => false, 'message' => $e->getMessage());
+    }
+    return $response;
 });
 
 
