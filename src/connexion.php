@@ -7,6 +7,11 @@ $host = "localhost";
 $user = "root";
 $password = "root";
 $dbname = "fidelia";
+/*
+$host = "lemaniockvpersis.mysql.db";
+$user = "lemaniockvpersis";
+$password = "BossGroup51";
+$dbname = "lemaniockvpersis";*/
 
 $pdo = null;
 try{
