@@ -31,7 +31,7 @@ $app->get('/getall', function (Request $request, Response $response, array $args
     
     try{
         $message = json_decode($_POST['message']);
-        $contenu = $pdo->prepare('SELECT * FROM tag');//->execute(array($name,$password));
+        $contenu = $pdo->prepare('SELECT ID_Tag, Nom_Tag, Description_Tag FROM tag');//->execute(array($name,$password));
         $contenu->execute();
         $liste = $contenu->fetchAll(PDO::FETCH_ASSOC);
 

@@ -62,8 +62,8 @@ $app->post('/delete', function (Request $request, Response $response, array $arg
     if(isset($_POST['id']) && isset($_POST['table']) && isset($_POST['champs'])){
         try{
             $id = intval($_POST['id']);
-            $contenu = $pdo->prepare('DELETE FROM '.$_POST['table'].' WHERE ?=?');//->execute(array($name,$password));
-            $contenu->execute(array($_POST['champs'],$id));
+            $contenu = $pdo->prepare('DELETE FROM '.$_POST['table'].' WHERE '.$_POST['champs'].'=?');//->execute(array($name,$password));
+            $contenu->execute(array($id));
 
             echo json_encode(array('success' => true, "message" => $_POST['table']. ' supprimé'));
         }catch(Exception $e){
@@ -74,11 +74,10 @@ $app->post('/delete', function (Request $request, Response $response, array $arg
 
 $app->post('/importCSV', function (Request $request, Response $response, array $args) use ($pdo) {
     if ( 0 < $_FILES['file']['error'] ) {
-        echo 'Error: ' . $_FILES['file']['error'] . '<br>';
+        echo json_encode(array('success' => false, 'message' => $_FILES['file']['error']));
     }
     else {
         //move_uploaded_file($_FILES['file']['tmp_name'], 'uploads/' . $_FILES['file']['name']);
-        if(isset($_POST['table'])){
             $row = 1;
             $sql = "";
             $arrayData = array();
@@ -87,7 +86,7 @@ $app->post('/importCSV', function (Request $request, Response $response, array $
                     $num = count($data);
 
                     if($row == 1){
-                        $sql .= 'INSERT INTO '+ $_POST['table'] +' VALUES ';
+                        $sql .= 'INSERT INTO client VALUES ';
                     }else{
                         $sql .= "(";
                         for ($c=0; $c < $num; $c++) {
@@ -103,11 +102,11 @@ $app->post('/importCSV', function (Request $request, Response $response, array $
             try{
                 $contenu = $pdo->prepare(rtrim($sql, ','));//->execute(array($name,$password));
                 $contenu->execute($arrayData);
-                echo json_encode(array('success' => true, "message" => 'Message enregistré'));
+                echo json_encode(array('success' => true, "message" => 'List de client correctement enregistrer'));
             }catch(Exception $e){
                 echo json_encode(array('success' => false, 'message' => $e->getMessage()));
             }
-        }
+        
     }
     fclose($handle);
        
