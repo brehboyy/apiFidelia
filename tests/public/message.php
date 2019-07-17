@@ -34,12 +34,28 @@ $app->post('/insertMessage', function (Request $request, Response $response, arr
             $message = json_decode($_POST['message']);
             $contenu = $pdo->prepare('INSERT INTO `modele_message` (`ID_Modele_Message`, `Titre_Modele_Message`, `Corps_Modele_Message`, `Objet_Modele_Message`, `Type_Modele_Message`, `Categorie_Modele_Message`, `Date_Modele_Message`) VALUES (NULL, ?, ?, ?, ?, ?, ?)');//->execute(array($name,$password));
             $contenu->execute(array($message->Titre, $message->Corps, $message->Object, $message->Type, $message->Categorie, date("Y-m-d")));
-            echo json_encode(array('success' => true, "message" => 'Message enregistré'));
+            echo json_encode(array('success' => true, 'message' => 'Message enregistré'));
         }catch(Exception $e){
             echo json_encode(array('success' => false, 'message' => $e->getMessage()));
         }
     }
 });
+
+/// ++ Début SRO - V1 - 17.07.2019 InsertProgrammation
+$app->post('/insertProgrammation', function (Request $request, Response $response, array $args) use ($pdo) {
+    if (isset($_POST['programmation']))
+    {   
+        try{
+            $programmation = json_decode($_POST['programmation']);
+            $contenu = $pdo->prepare('INSERT INTO `programmation` (`IDProgrammation`,`ID_Modele_Message`, `NbTempsJour`, `DateEnvoi`, `Condition`) VALUES (NULL, ?, ?, ?, ?)');//->execute(array($name,$password));
+            $contenu->execute(array($programmation->ID_Modele_Message, $programmation->NbTempsJour, $programmation->DateEnvoi, $programmation->Condition));
+            echo json_encode(array('success' => true, 'message' => 'Programmation enregistré'));
+        }catch(Exception $e){
+            echo json_encode(array('success' => false, 'message' => $e->getMessage()));
+        }
+    }
+});
+/// ++ Fin SRO - V1 - 17.07.2019 InsertProgrammation
 
 
 $app->get('/getall', function (Request $request, Response $response, array $args) use ($pdo) {
