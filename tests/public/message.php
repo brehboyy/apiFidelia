@@ -89,7 +89,7 @@ $app->get('/GetById/{Id}', function (Request $request, Response $response, array
 $app->get('/getbytype/{type}', function (Request $request, Response $response, array $args) use ($pdo) {
     try{
         $type = $args['type'];
-		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message FROM modele_message m  WHERE m.Type_Modele_Message = ?');
+		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Template_Modele_Message, Template_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message FROM modele_message m  WHERE m.Type_Modele_Message = ?');
 		$contenu->execute(array($type));
         $liste = $contenu->fetchAll(PDO::FETCH_ASSOC);
         
@@ -104,7 +104,7 @@ $app->get('/getbytype/{type}', function (Request $request, Response $response, a
 $app->get('/GetByCategorie/{Categorie}', function (Request $request, Response $response, array $args) use ($pdo) {
     try{
         $Categorie = $args['Categorie'];
-		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message FROM modele_message m  WHERE m.Categorie_Modele_Message = ?');
+		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Template_Modele_Message, Template_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message FROM modele_message m  WHERE m.Categorie_Modele_Message = ?');
 		$contenu->execute(array($Categorie));
         $liste = $contenu->fetchAll(PDO::FETCH_ASSOC);
         
@@ -118,7 +118,7 @@ $app->get('/GetByCategorie/{Categorie}', function (Request $request, Response $r
 $app->get('/GetByDate/{Date}', function (Request $request, Response $response, array $args) use ($pdo) {
     try{
         $Date = $args['Date'];
-		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message FROM modele_message m  WHERE m.Date_Modele_Message = ?');
+		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Template_Modele_Message, Template_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message FROM modele_message m  WHERE m.Date_Modele_Message = ?');
 		$contenu->execute(array($Date));
         $liste = $contenu->fetchAll(PDO::FETCH_ASSOC);
         
