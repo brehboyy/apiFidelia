@@ -29,73 +29,100 @@ $app->get('/hello/{name}', function (Request $request, Response $response, array
 
 
 
-$app->get('/sendMessage/{str}', function (Request $request, Response $response, array $args) use ($pdo) {
+$app->get('/sendMessage', function (Request $request, Response $response, array $args) use ($pdo) {
     try{
-    $str = $args['str'];
-    $html = $str;
-    $needle = "{{";
-    $lastPos = 0;
-    $positions = array();
-    $dirPositions = array();
 
     //On recupere la position des balise dans le corps du message
-    while (($lastPos = strpos($html, $needle, $lastPos))!== false) {
-        $positions[] = $lastPos;
-        $lastPos = $lastPos + strlen($needle);
-    }
-    //On recupere le nom des balise correspondant
-    $liste = array();
-    for($i = 0 ; $i < count($positions) ; $i++){
-        $contenu = $pdo->prepare('SELECT `ID_Balise`,`Attribut_Balise`,`Nom_Balise`,`Table_Balise` FROM `balise` WHERE `Nom_Balise` = ?');
-		$contenu->execute(array(strtoupper(get_string_between(substr ( $str, $positions[$i], ($i == count($positions) - 1) ? strlen($str) - $positions[$i] : $positions[$i + 1] - $positions[$i] ), "{{", "}}"))));
-        $res = $contenu->fetchAll(PDO::FETCH_ASSOC);
-        array_push($liste, $res[0]);
-    }
-
-    $sql = "SELECT ID_Modele_Message, Corps_Modele_Message, Objet_Modele_Message FROM programmation p INNER JOIN modele_message m ON p.ID_Modele_Message_programmation = m.ID_Modele_Message WHERE m.Statut_Message = 'EN COUR' AND CURDATE() = DATE_ADD(p.DateEnvoi_programmation, INTERVAL p.NbTempsJour_programmation DAY) AND Type_Modele_Message = 'Mail'";
+    
+    //$sql = "SELECT c.ID_client ,c.Adresse_Mail_Client, Corps_Modele_Message, Objet_Modele_Message ,REPLACE(m.Corps_Modele_Message, \'{{Nom_Client}}\',c.Nom_Client) FROM tagmessage tm INNER JOIN modele_message m ON tm.ID_message_modele_message = m.ID_Modele_Message INNER JOIN tagclient tc ON tm.ID_tag_tagmessage = tc.ID_Tag INNER JOIN client c ON tc.ID_Client = c.ID_Client INNER JOIN programmation p ON p.ID_Modele_Message_programmation = m.ID_Modele_Message WHERE m.Statut_Message = \'EN COUR\' AND CURDATE() = date(DATE_ADD(p.DateEnvoi_programmation, INTERVAL p.NbTempsJour_programmation DAY)) AND Type_Modele_Message = \'Mail\'";
+    
+    //$sql = "SELECT ID_Modele_Message, Corps_Modele_Message, Objet_Modele_Message FROM modele_message m INNER JOIN programmation p ON p.ID_Modele_Message_programmation = m.ID_Modele_Message WHERE m.Statut_Message = 'EN COUR' AND CURDATE() = DATE_ADD(p.DateEnvoi_programmation, INTERVAL p.NbTempsJour_programmation DAY) AND Type_Modele_Message = 'Mail'";
+    //$sql = "SELECT c.ID_client ,c.Adresse_Mail_Client,m.ID_Modele_Message , Corps_Modele_Message, Objet_Modele_Message FROM tagmessage tm INNER JOIN modele_message m ON tm.ID_message_modele_message = m.ID_Modele_Message INNER JOIN tagclient tc ON tm.ID_tag_tagmessage = tc.ID_Tag INNER JOIN client c ON tc.ID_Client = c.ID_Client INNER JOIN programmation p ON p.ID_Modele_Message_programmation = m.ID_Modele_Message WHERE m.Statut_Message = 'EN COUR' AND CURDATE() = date(DATE_ADD(p.DateEnvoi_programmation, INTERVAL p.NbTempsJour_programmation DAY)) AND Type_Modele_Message = 'Mail'";
+    $sql = "SELECT m.ID_Modele_Message , Corps_Modele_Message, Objet_Modele_Message FROM modele_message m INNER JOIN programmation p ON p.ID_Modele_Message_programmation = m.ID_Modele_Message WHERE m.Statut_Message = 'EN COUR' AND CURDATE() = date(DATE_ADD(p.DateEnvoi_programmation, INTERVAL p.NbTempsJour_programmation DAY)) AND Type_Modele_Message = 'Mail'";
     $contenu = $pdo->prepare($sql);
 	$contenu->execute();
     $res = $contenu->fetchAll(PDO::FETCH_ASSOC);
 
     if(count($res) > 0){
         foreach($res as $key => $value){
-            $contenu = $pdo->prepare("SELECT DISTINCT c.ID_client ,c.Adresse_Mail_Client FROM tagmessage tm INNER JOIN modele_message m ON tm.ID_message = m.ID_Modele_Message INNER JOIN tagclient tc ON tm.ID_tag = tc.ID_Tag INNER JOIN client c ON tc.ID_Client = c.ID_Client WHERE tm.ID_message =  ?");
-            $contenu->execute(array($value['ID_Modele_Message']));
-            $listResClient = $contenu->fetchAll(PDO::FETCH_ASSOC);
-            
-            try{
-                // Instantiation and passing `true` enables exceptions
-                $mail = new PHPMailer(true);
 
-                try {
-                    //Server settings
-                    $mail->SMTPDebug = 2;                                       // Enable verbose debug output
-                    $mail->isSMTP();                                            // Set mailer to use SMTP
-                    $mail->Host       = 'smtp.gmail.com';  // Specify main and backup SMTP servers
-                    $mail->SMTPAuth   = true;                                   // Enable SMTP authentication
-                    $mail->Username   = 'ousmane16diarra@gmail.com';                     // SMTP username
-                    $mail->Password   = 'streete58';                               // SMTP password
-                    $mail->SMTPSecure = 'ssl';                                  // Enable TLS encryption, `ssl` also accepted
-                    $mail->Port       = 465;                                    // TCP port to connect to
-                    $mail->SMTPAutoTLS = false;
-                    //Recipients
-                    $mail->setFrom('ousmane16diarra@gmail.com', 'Mailer');
-                    $mail->addAddress('ousmane.diarra1@outlook.fr', 'Ousmane Diarra');     // Add a recipient
+            $html = $value['Corps_Modele_Message'];
+            $needle = "{{";
+            $lastPos = 0;
+            $positions = array();
+            $dirPositions = array();
 
-                    // Content
-                    $mail->isHTML(true);                                // Set email format to HTML
-                    $mail->Subject = $value['Objet_Modele_Message'];
-                    $mail->Body    = $value['Corps_Modele_Message'];
-                    $mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+            while (($lastPos = strpos($html, $needle, $lastPos))!== false) {
+                $positions[] = $lastPos;
+                $lastPos = $lastPos + strlen($needle);
+            }
+            //On recupere le nom des balise correspondant
+            $liste = array();
+            for($i = 0 ; $i < count($positions) ; $i++){
+                $contenu = $pdo->prepare('SELECT `ID_Balise`,`Attribut_Balise`,`Nom_Balise`,`Table_Balise` FROM `balise` WHERE `Nom_Balise` = ?');
+                $contenu->execute(array(strtoupper(get_string_between(substr ( $html, $positions[$i], ($i == count($positions) - 1) ? strlen($html) - $positions[$i] : $positions[$i + 1] - $positions[$i] ), "{{", "}}"))));
+                $res = $contenu->fetchAll(PDO::FETCH_ASSOC);
+                array_push($liste, $res[0]);
+            }
+            $str = "";
+            $compt = 0;
+            $listResClient = array();
+            foreach($liste as $nomBalise => $valchamps){
+                //$str = str_replace('{{'.$valchamps['Nom_Balise'].'}}', $valchamps['Attribut_Balise'], $compt == 0 ? $value['Corps_Modele_Message'] : $str);
+                if($compt == 0){
+                    $str = "REPLACE(Corps_Modele_Message,'{{".$valchamps['Nom_Balise']."}}',".$valchamps['Attribut_Balise'].")";
+                }else{
+                    $str = "REPLACE(".$str.",'{{".$valchamps['Nom_Balise']."}}',".$valchamps['Attribut_Balise'].")";
+                }
+                $compt++;
+            }
+            if(strlen($str) > 0){
+                $sql = "SELECT ".$str." AS CorpsMessage, c.Adresse_Mail_Client  FROM tagmessage tm INNER JOIN modele_message m ON tm.ID_message_modele_message = m.ID_Modele_Message INNER JOIN tagclient tc ON tm.ID_tag_tagmessage = tc.ID_Tag INNER JOIN client c ON tc.ID_Client = c.ID_Client WHERE m.ID_Modele_Message = ?";
+                $contenu = $pdo->prepare($sql);
+                $contenu->execute(array($value["ID_Modele_Message"]));
+                $listResClient = $contenu->fetchAll(PDO::FETCH_ASSOC);
+            }else{
+                $sql = "SELECT Corps_Modele_Message AS CorpsMessage, c.Adresse_Mail_Client FROM tagmessage tm INNER JOIN modele_message m ON tm.ID_message_modele_message = m.ID_Modele_Message INNER JOIN tagclient tc ON tm.ID_tag_tagmessage = tc.ID_Tag INNER JOIN client c ON tc.ID_Client = c.ID_Client WHERE m.ID_Modele_Message = ?";
+                $contenu = $pdo->prepare($sql);
+                $contenu->execute(array($value["ID_Modele_Message"]));
+                $listResClient = $contenu->fetchAll(PDO::FETCH_ASSOC);
+            }
 
-                    $mail->send();
-                    echo json_encode( array('success' => true, 'message' => 'Message has been sent'));
-                } catch (Exception $e) {
+            foreach($listResClient as $cle => $client){
+                try{
+                    // Instantiation and passing `true` enables exceptions
+                    $mail = new PHPMailer(true);
+
+                    try {
+                        //Server settings
+                        $mail->SMTPDebug = 2;                                       // Enable verbose debug output
+                        $mail->isSMTP();                                            // Set mailer to use SMTP
+                        $mail->Host       = 'smtp.gmail.com';  // Specify main and backup SMTP servers
+                        $mail->SMTPAuth   = true;                                   // Enable SMTP authentication
+                        $mail->Username   = 'fideliialaval@gmail.com';                     // SMTP username
+                        $mail->Password   = 'BossGroup51';                               // SMTP password
+                        $mail->SMTPSecure = 'ssl';                                  // Enable TLS encryption, `ssl` also accepted
+                        $mail->Port       = 465;                                    // TCP port to connect to
+                        $mail->SMTPAutoTLS = false;
+                        //Recipients
+                        $mail->setFrom('fideliialaval@gmail.com', 'Ma pute');
+                        $mail->addAddress('ousmane.diarra1@outlook.fr', 'Ousmane Diarra');  //$client['Adresse_Mail_Client']  // Add a recipient
+
+                        // Content
+                        $mail->isHTML(true);                                // Set email format to HTML
+                        $mail->Subject = $value['Objet_Modele_Message'];
+                        $mail->Body    = $client['CorpsMessage'] ;
+                        //$mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+
+                        $mail->send();
+                        echo json_encode( array('success' => true, 'message' => 'Message has been sent'));
+                    } catch (Exception $e) {
+                        echo json_encode( array('success' => false, 'message' => $e->getMessage()));
+                    }
+                
+                }catch(Exception $e){
                     echo json_encode( array('success' => false, 'message' => $e->getMessage()));
                 }
-            
-            }catch(Exception $e){
-                echo json_encode( array('success' => false, 'message' => $e->getMessage()));
             }
 
         }

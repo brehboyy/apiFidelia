@@ -47,7 +47,7 @@ $app->post('/insertProgrammation', function (Request $request, Response $respons
     {   
         try{
             $programmation = json_decode($_POST['programmation']);
-            $contenu = $pdo->prepare('INSERT INTO `programmation` (`IDProgrammation`,`ID_Modele_Message`, `NbTempsJour`, `DateEnvoi`, `Condition`) VALUES (NULL, ?, ?, ?, ?)');//->execute(array($name,$password));
+            $contenu = $pdo->prepare('INSERT INTO `programmation` (`ID_programmation`,`ID_Modele_Message_programmation`, `NbTempsJour_programmation`, `DateEnvoi_programmation`, `Condition_programmation`) VALUES (NULL, ?, ?, ?, ?)');//->execute(array($name,$password));
             $contenu->execute(array($programmation->ID_Modele_Message, $programmation->NbTempsJour, $programmation->DateEnvoi, $programmation->Condition));
             echo json_encode(array('success' => true, 'message' => 'Programmation enregistré'));
         }catch(Exception $e){
