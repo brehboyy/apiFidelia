@@ -32,15 +32,9 @@ $app->post('/insertMessage', function (Request $request, Response $response, arr
     {	
         try{
             $message = json_decode($_POST['message']);
-<<<<<<< Updated upstream
-            $contenu = $pdo->prepare('INSERT INTO `modele_message` (`ID_Modele_Message`, `Titre_Modele_Message`, `Corps_Modele_Message`, `Objet_Modele_Message`, `Type_Modele_Message`, `Categorie_Modele_Message`, `Date_Modele_Message`) VALUES (NULL, ?, ?, ?, ?, ?, ?)');//->execute(array($name,$password));
-            $contenu->execute(array($message->Titre, $message->Corps, $message->Object, $message->Type, $message->Categorie, date("Y-m-d")));
-            echo json_encode(array('success' => true, 'message' => 'Message enregistré'));
-=======
             $contenu = $pdo->prepare('INSERT INTO `modele_message` (`ID_Modele_Message`, `Titre_Modele_Message`, `Corps_Modele_Message`,`Template_Modele_Message`, `Objet_Modele_Message`, `Type_Modele_Message`, `Categorie_Modele_Message`, `Date_Modele_Message`) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)');//->execute(array($name,$password));
             $contenu->execute(array($message->Titre, $message->Corps, $message->Template, $message->Object, $message->Type, $message->Categorie, date("Y-m-d")));
             echo json_encode(array('success' => true, "message" => 'Message enregistré'));
->>>>>>> Stashed changes
         }catch(Exception $e){
             echo json_encode(array('success' => false, 'message' => $e->getMessage()));
         }
