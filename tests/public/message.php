@@ -57,11 +57,48 @@ $app->post('/insertProgrammation', function (Request $request, Response $respons
 });
 /// ++ Fin SRO - V1 - 17.07.2019 InsertProgrammation
 
+/// ++ Début SRO - V1 - 18.07.2019 UpdateMessage
+$app->post('/updateMessage', function (Request $request, Response $response, array $args) use ($pdo) {
+    if (isset($_POST['message']))
+    {   
+        try{
+            $message = json_decode($_POST['message']);
+            $contenu = $pdo->prepare('UPDATE `modele_message` SET `Titre_Modele_Message`= ?,`Corps_Modele_Message`= ?,`Template_Modele_Message`= ?,`Objet_Modele_Message`= ?,`Type_Modele_Message`= ?,`Categorie_Modele_Message`= ?  WHERE  `ID_Modele_Message`= ? ;');
+            $contenu->execute(array($message->Titre, $message->Corps, $message->Template, $message->Object, $message->Type, $message->Categorie, $message->Id));
+            echo json_encode(array('success' => true, "message" => 'Message enregistré'));
+        }catch(Exception $e){
+            var_dump($contenu);
+            echo json_encode(array('success' => false, 'message' => $e->getMessage()));
+        }
+    }
+});
+
+$app->get('/existById/{Id}', function (Request $request, Response $response, array $args) use ($pdo) {
+    if (isset($args['Id'])) {
+        try{
+            $Id = $args['Id'];
+            $contenu = $pdo->prepare('SELECT ID_Modele_Message FROM modele_message m  WHERE m.ID_Modele_Message = ?');
+            $contenu->execute(array($Id));
+            $liste = $contenu->fetchAll(PDO::FETCH_ASSOC); 
+            if (count($liste) > 0) {
+                echo json_encode(array('success' => true, 'message' => 'message exist', 'result' => true));
+            }else{
+                echo json_encode(array('success' => true, 'message' => 'message exist', 'result' => false));
+            }
+            
+        }catch(Exception $e){
+            echo json_encode(array('success' => false, 'message' => $e->getMessage()));
+        }
+ }
+});
+
+/// ++ Fin SRO - V1 - 18.07.2019 UpdateMessage
+
 
 
 $app->get('/getall', function (Request $request, Response $response, array $args) use ($pdo) {
     try{
-		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Template_Modele_Message, Template_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message FROM modele_message');//->execute(array($name,$password));
+		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Template_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message FROM modele_message');//->execute(array($name,$password));
 		$contenu->execute();
         $liste = $contenu->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode(array('success' => true, 'message' => 'recuperation reussi', 'result' => $liste));
@@ -73,23 +110,24 @@ $app->get('/getall', function (Request $request, Response $response, array $args
 
 
 $app->get('/GetById/{Id}', function (Request $request, Response $response, array $args) use ($pdo) {
-    try{
-        $Id = $args['Id'];
-		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Template_Modele_Message, Template_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message FROM modele_message m  WHERE m.ID_Modele_Message = ?');
-		$contenu->execute(array($Id));
-        $liste = $contenu->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode(array('success' => true, 'message' => 'recuperation reussi', 'result' => $liste));
-        
-    }catch(Exception $e){
-        echo json_encode(array('success' => false, 'message' => $e->getMessage()));
-    }
-    return $response;
+    if (isset($args['Id'])) {
+        try{
+            $Id = $args['Id'];
+    		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Template_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message FROM modele_message m  WHERE m.ID_Modele_Message = ?');
+    		$contenu->execute(array($Id));
+            $liste = $contenu->fetchAll(PDO::FETCH_ASSOC);
+            echo json_encode(array('success' => true, 'message' => 'recuperation reussi', 'result' => $liste));
+            
+        }catch(Exception $e){
+            echo json_encode(array('success' => false, 'message' => $e->getMessage()));
+        }
+ }
 });
 
 $app->get('/getbytype/{type}', function (Request $request, Response $response, array $args) use ($pdo) {
     try{
         $type = $args['type'];
-		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Template_Modele_Message, Template_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message FROM modele_message m  WHERE m.Type_Modele_Message = ?');
+		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Template_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message FROM modele_message m  WHERE m.Type_Modele_Message = ?');
 		$contenu->execute(array($type));
         $liste = $contenu->fetchAll(PDO::FETCH_ASSOC);
         
@@ -104,7 +142,7 @@ $app->get('/getbytype/{type}', function (Request $request, Response $response, a
 $app->get('/GetByCategorie/{Categorie}', function (Request $request, Response $response, array $args) use ($pdo) {
     try{
         $Categorie = $args['Categorie'];
-		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Template_Modele_Message, Template_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message FROM modele_message m  WHERE m.Categorie_Modele_Message = ?');
+		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Template_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message FROM modele_message m  WHERE m.Categorie_Modele_Message = ?');
 		$contenu->execute(array($Categorie));
         $liste = $contenu->fetchAll(PDO::FETCH_ASSOC);
         
@@ -118,7 +156,7 @@ $app->get('/GetByCategorie/{Categorie}', function (Request $request, Response $r
 $app->get('/GetByDate/{Date}', function (Request $request, Response $response, array $args) use ($pdo) {
     try{
         $Date = $args['Date'];
-		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Template_Modele_Message, Template_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message FROM modele_message m  WHERE m.Date_Modele_Message = ?');
+		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Template_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message FROM modele_message m  WHERE m.Date_Modele_Message = ?');
 		$contenu->execute(array($Date));
         $liste = $contenu->fetchAll(PDO::FETCH_ASSOC);
         
