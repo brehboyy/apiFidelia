@@ -34,6 +34,17 @@ $app->post('/insertMessage', function (Request $request, Response $response, arr
             $message = json_decode($_POST['message']);
             $contenu = $pdo->prepare('INSERT INTO `modele_message` (`ID_Modele_Message`, `Titre_Modele_Message`, `Corps_Modele_Message`,`Template_Modele_Message`, `Objet_Modele_Message`, `Type_Modele_Message`, `Categorie_Modele_Message`, `Date_Modele_Message`) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)');//->execute(array($name,$password));
             $contenu->execute(array($message->Titre, $message->Corps, $message->Template, $message->Object, $message->Type, $message->Categorie, date("Y-m-d")));
+            $contenu = $pdo->prepare('SELECT LAST_INSERT_ID() AS LASTID;');
+            $contenu->execute();
+            $liste = $contenu->fetchAll(PDO::FETCH_ASSOC); 
+            foreach($message->ListTag as $nomtag){
+                try{
+                    $contenu = $pdo->prepare('INSERT INTO tagmessage (`ID_tag_tagmessage`,`ID_message_modele_message`) SELECT ID_tag, '.$liste[0]['LASTID'].' FROM tag t WHERE t.Nom_Tag = ?');
+                    $contenu->execute(array($nomtag));
+                }catch(Exception $e){
+
+                }
+            }
             echo json_encode(array('success' => true, "message" => 'Message enregistré'));
         }catch(Exception $e){
             echo json_encode(array('success' => false, 'message' => $e->getMessage()));
@@ -62,12 +73,24 @@ $app->post('/updateMessage', function (Request $request, Response $response, arr
     if (isset($_POST['message']))
     {   
         try{
+            
             $message = json_decode($_POST['message']);
-            $contenu = $pdo->prepare('UPDATE `modele_message` SET `Titre_Modele_Message`= ?,`Corps_Modele_Message`= ?,`Template_Modele_Message`= ?,`Objet_Modele_Message`= ?,`Type_Modele_Message`= ?,`Categorie_Modele_Message`= ?  WHERE  `ID_Modele_Message`= ? ;');
-            $contenu->execute(array($message->Titre, $message->Corps, $message->Template, $message->Object, $message->Type, $message->Categorie, $message->Id));
+            //var_dump($message);
+            $contenu = $pdo->prepare('UPDATE `modele_message` SET `Titre_Modele_Message`= ?,`Corps_Modele_Message`= ?,`Template_Modele_Message`= ?,`Objet_Modele_Message`= ?,`Type_Modele_Message`= ?,`Categorie_Modele_Message`= ?  WHERE  `ID_Modele_Message`= ? ');
+            $contenu->execute(array($message->Titre, $message->Corps, $message->Template, $message->Object, $message->Type, $message->Categorie, $message->Id)); 
+            
+            
+            /*foreach($message->ListTag as $nomtag){
+                
+                try{
+                    $contenu = $pdo->prepare('INSERT IGNORE INTO tagmessage (`ID_tag_tagmessage`,`ID_message_modele_message`) SELECT ID_tag, ? FROM tag t WHERE t.Nom_Tag = ?');
+                    $contenu->execute(array($message->Id, $nomtag));
+                }catch(Exception $e){
+
+                }
+            }*/
             echo json_encode(array('success' => true, "message" => 'Message enregistré'));
         }catch(Exception $e){
-            var_dump($contenu);
             echo json_encode(array('success' => false, 'message' => $e->getMessage()));
         }
     }

@@ -61,13 +61,13 @@ $app->post('/insertClient', function (Request $request, Response $response, arra
             
             $contenu = $pdo->prepare('INSERT INTO tag VALUES (NULL,?,?);');
             $contenu->execute(array(json_decode($_POST['nom_tag']), "test"));
-            $contenu = $pdo->prepare('SELECT LAST_INSERT_ID();');
+            $contenu = $pdo->prepare('SELECT LAST_INSERT_ID() AS LASTID;;');
             $contenu->execute();
             $liste = $contenu->fetchAll();
 
             foreach(json_decode($_POST['listId']) as $val){
                 $contenu = $pdo->prepare('INSERT INTO tagclient VALUES (?,?);');
-                $contenu->execute(array($liste[0][0],$val));
+                $contenu->execute(array($liste[0]['LASTID'],$val));
             }
 
             echo json_encode(array('success' => true, 'message' => "Creation du tag reussi", 'result' => $liste));
