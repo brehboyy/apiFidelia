@@ -45,7 +45,7 @@ $app->post('/insertMessage', function (Request $request, Response $response, arr
 
                 }
             }
-            echo json_encode(array('success' => true, "message" => 'Message enregistré'));
+            echo json_encode(array('success' => true, "message" => 'Message enregistré', 'result' => $liste[0]['LASTID']));
         }catch(Exception $e){
             echo json_encode(array('success' => false, 'message' => $e->getMessage()));
         }
@@ -326,7 +326,6 @@ $app->get('/sendMessage/{str}/', function (Request $request, Response $response,
 });
 
  $app->post('/envoyer', function (Request $request, Response $response, array $args) use ($pdo) {
-    var_dump($_POST['Id']);
     if(isset($_POST['Id'])){
         // Fais ce que tu as à faire !
     }
