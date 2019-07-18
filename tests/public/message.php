@@ -77,6 +77,7 @@ $app->post('/updateMessage', function (Request $request, Response $response, arr
             $contenu = $pdo->prepare('UPDATE `modele_message` SET `Titre_Modele_Message`= ?,`Corps_Modele_Message`= ?,`Template_Modele_Message`= ?,`Objet_Modele_Message`= ?,`Type_Modele_Message`= ?,`Categorie_Modele_Message`= ?  WHERE  `ID_Modele_Message`= ? ');
             $contenu->execute(array($message->Titre, $message->Corps, $message->Template, $message->Object, $message->Type, $message->Categorie, $message->Id)); 
             
+
             $contenu = $pdo->prepare('DELETE FROM tagmessage WHERE ID_message_modele_message = ?');
             $contenu->execute($message->Id); 
             
@@ -112,6 +113,23 @@ $app->get('/existById/{Id}', function (Request $request, Response $response, arr
             echo json_encode(array('success' => false, 'message' => $e->getMessage()));
         }
  }
+});
+
+$app->post('/updateStatusMessage', function (Request $request, Response $response, array $args) use ($pdo) {
+    if (isset($_POST['message']))
+    {   
+        try{
+            $message = json_decode($_POST['message']);
+            var_dump($message);
+            //var_dump($message);
+            $contenu = $pdo->prepare('UPDATE `modele_message` SET `Statut_Message`= ?  WHERE  `ID_Modele_Message`= ? ');
+            $contenu->execute(array($message->Status,$message->Id)); 
+            
+            echo json_encode(array('success' => true, "message" => 'Statut du message enregistré'));
+        }catch(Exception $e){
+            echo json_encode(array('success' => false, 'message' => $e->getMessage()));
+        }
+    }
 });
 
 /// ++ Fin SRO - V1 - 18.07.2019 UpdateMessage
