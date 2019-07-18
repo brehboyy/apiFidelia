@@ -325,8 +325,11 @@ $app->get('/sendMessage/{str}/', function (Request $request, Response $response,
     return $response;*/
 });
 
- $app->get('/envoyer', function (Request $request, Response $response, array $args) use ($pdo) {
-    
+ $app->post('/envoyer', function (Request $request, Response $response, array $args) use ($pdo) {
+    var_dump($_POST['Id']);
+    if(isset($_POST['Id'])){
+        // Fais ce que tu as à faire !
+    }
     try{
         $to      = 'personne@example.com';
         $subject = 'le sujet';
