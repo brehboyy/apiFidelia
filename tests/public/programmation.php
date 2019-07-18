@@ -38,7 +38,7 @@ $app->get('/sendMessage', function (Request $request, Response $response, array 
     
     //$sql = "SELECT ID_Modele_Message, Corps_Modele_Message, Objet_Modele_Message FROM modele_message m INNER JOIN programmation p ON p.ID_Modele_Message_programmation = m.ID_Modele_Message WHERE m.Statut_Message = 'EN COUR' AND CURDATE() = DATE_ADD(p.DateEnvoi_programmation, INTERVAL p.NbTempsJour_programmation DAY) AND Type_Modele_Message = 'Mail'";
     //$sql = "SELECT c.ID_client ,c.Adresse_Mail_Client,m.ID_Modele_Message , Corps_Modele_Message, Objet_Modele_Message FROM tagmessage tm INNER JOIN modele_message m ON tm.ID_message_modele_message = m.ID_Modele_Message INNER JOIN tagclient tc ON tm.ID_tag_tagmessage = tc.ID_Tag INNER JOIN client c ON tc.ID_Client = c.ID_Client INNER JOIN programmation p ON p.ID_Modele_Message_programmation = m.ID_Modele_Message WHERE m.Statut_Message = 'EN COUR' AND CURDATE() = date(DATE_ADD(p.DateEnvoi_programmation, INTERVAL p.NbTempsJour_programmation DAY)) AND Type_Modele_Message = 'Mail'";
-    $sql = "SELECT m.ID_Modele_Message , Corps_Modele_Message, Objet_Modele_Message FROM modele_message m INNER JOIN programmation p ON p.ID_Modele_Message_programmation = m.ID_Modele_Message WHERE m.Statut_Message = 'EN COUR' AND CURDATE() = date(DATE_ADD(p.DateEnvoi_programmation, INTERVAL p.NbTempsJour_programmation DAY)) AND Type_Modele_Message = 'Mail'";
+    $sql = "SELECT m.ID_Modele_Message , Corps_Modele_Message, Objet_Modele_Message FROM modele_message m INNER JOIN programmation p ON p.ID_Modele_Message_programmation = m.ID_Modele_Message WHERE m.Statut_Message = 'EN COUR' AND CURDATE() = date(DATE_ADD(p.DateEnvoi_programmation, INTERVAL p.NbTempsJour_programmation DAY)) AND Type_Modele_Message = 'Mail' AND HOUR(DATE_ADD(p.DateEnvoi_programmation, INTERVAL p.NbTempsJour_programmation DAY)) = HOUR(CURRENT_TIME)";
     $contenu = $pdo->prepare($sql);
 	$contenu->execute();
     $res = $contenu->fetchAll(PDO::FETCH_ASSOC);
@@ -64,6 +64,7 @@ $app->get('/sendMessage', function (Request $request, Response $response, array 
                 $res = $contenu->fetchAll(PDO::FETCH_ASSOC);
                 array_push($liste, $res[0]);
             }
+            $liste = array_unique($liste);
             $str = "";
             $compt = 0;
             $listResClient = array();
@@ -77,12 +78,12 @@ $app->get('/sendMessage', function (Request $request, Response $response, array 
                 $compt++;
             }
             if(strlen($str) > 0){
-                $sql = "SELECT ".$str." AS CorpsMessage, c.Adresse_Mail_Client  FROM tagmessage tm INNER JOIN modele_message m ON tm.ID_message_modele_message = m.ID_Modele_Message INNER JOIN tagclient tc ON tm.ID_tag_tagmessage = tc.ID_Tag INNER JOIN client c ON tc.ID_Client = c.ID_Client WHERE m.ID_Modele_Message = ?";
+                $sql = "SELECT ".$str." AS CorpsMessage, c.Nom_Client, c.Prenom_Client, c.Adresse_Mail_Client  FROM tagmessage tm INNER JOIN modele_message m ON tm.ID_message_modele_message = m.ID_Modele_Message INNER JOIN tagclient tc ON tm.ID_tag_tagmessage = tc.ID_Tag INNER JOIN client c ON tc.ID_Client = c.ID_Client WHERE m.ID_Modele_Message = ?";
                 $contenu = $pdo->prepare($sql);
                 $contenu->execute(array($value["ID_Modele_Message"]));
                 $listResClient = $contenu->fetchAll(PDO::FETCH_ASSOC);
             }else{
-                $sql = "SELECT Corps_Modele_Message AS CorpsMessage, c.Adresse_Mail_Client FROM tagmessage tm INNER JOIN modele_message m ON tm.ID_message_modele_message = m.ID_Modele_Message INNER JOIN tagclient tc ON tm.ID_tag_tagmessage = tc.ID_Tag INNER JOIN client c ON tc.ID_Client = c.ID_Client WHERE m.ID_Modele_Message = ?";
+                $sql = "SELECT Corps_Modele_Message AS CorpsMessage, c.Nom_Client, c.Prenom_Client, c.Adresse_Mail_Client FROM tagmessage tm INNER JOIN modele_message m ON tm.ID_message_modele_message = m.ID_Modele_Message INNER JOIN tagclient tc ON tm.ID_tag_tagmessage = tc.ID_Tag INNER JOIN client c ON tc.ID_Client = c.ID_Client WHERE m.ID_Modele_Message = ?";
                 $contenu = $pdo->prepare($sql);
                 $contenu->execute(array($value["ID_Modele_Message"]));
                 $listResClient = $contenu->fetchAll(PDO::FETCH_ASSOC);
@@ -105,8 +106,8 @@ $app->get('/sendMessage', function (Request $request, Response $response, array 
                         $mail->Port       = 465;                                    // TCP port to connect to
                         $mail->SMTPAutoTLS = false;
                         //Recipients
-                        $mail->setFrom('fideliialaval@gmail.com', 'Ma pute');
-                        $mail->addAddress('ousmane.diarra1@outlook.fr', 'Ousmane Diarra');  //$client['Adresse_Mail_Client']  // Add a recipient
+                        $mail->setFrom('fideliialaval@gmail.com', 'GAINDE');
+                        $mail->addAddress($client['Adresse_Mail_Client'], $client['Nom_Client']." ".$client['Prenom_Client']);  //$client['Adresse_Mail_Client']  // Add a recipient
 
                         // Content
                         $mail->isHTML(true);                                // Set email format to HTML
@@ -115,7 +116,7 @@ $app->get('/sendMessage', function (Request $request, Response $response, array 
                         //$mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
 
                         $mail->send();
-                        echo json_encode( array('success' => true, 'message' => 'Message has been sent'));
+                        echo json_encode( array('success' => true, 'message' => 'Le message a ete envoye'));
                     } catch (Exception $e) {
                         echo json_encode( array('success' => false, 'message' => $e->getMessage()));
                     }

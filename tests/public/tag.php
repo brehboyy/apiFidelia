@@ -30,7 +30,6 @@ $app->get('/hello/{name}', function (Request $request, Response $response, array
 $app->get('/getall', function (Request $request, Response $response, array $args) use ($pdo) {
     
     try{
-        $message = json_decode($_POST['message']);
         $contenu = $pdo->prepare('SELECT ID_Tag, Nom_Tag, Description_Tag FROM tag');//->execute(array($name,$password));
         $contenu->execute();
         $liste = $contenu->fetchAll(PDO::FETCH_ASSOC);
@@ -54,30 +53,47 @@ $app->get('/GetById/{Id}', function (Request $request, Response $response, array
     }catch(Exception $e){
         echo json_encode(array('success' => false, 'message' => $e->getMessage(), 'result' => $liste));
     }
-    return $response;
 });
 
-$app->post('/insert', function (Request $request, Response $response, array $args) use ($pdo) {
-    try{
-        var_dump($_POST);
-        
-		$contenu = $pdo->prepare('INSERT INTO tag VALUES (NULL,?,?);');
-        $contenu->execute(array(json_decode($_POST['nom_tag']), "test"));
-        $contenu = $pdo->prepare('SELECT LAST_INSERT_ID();');
-        $contenu->execute();
-        $liste = $contenu->fetchAll();
+$app->post('/insertClient', function (Request $request, Response $response, array $args) use ($pdo) {
+    if(isset($_POST['nom_tag'])){
+        try{
+            
+            $contenu = $pdo->prepare('INSERT INTO tag VALUES (NULL,?,?);');
+            $contenu->execute(array(json_decode($_POST['nom_tag']), "test"));
+            $contenu = $pdo->prepare('SELECT LAST_INSERT_ID();');
+            $contenu->execute();
+            $liste = $contenu->fetchAll();
 
-        foreach(json_decode($_POST['listId']) as $val){
-            $contenu = $pdo->prepare('INSERT INTO tagclient VALUES (NULL,?,?);');
-            $contenu->execute(array($liste[0][0],$val));
+            foreach(json_decode($_POST['listId']) as $val){
+                $contenu = $pdo->prepare('INSERT INTO tagclient VALUES (?,?);');
+                $contenu->execute(array($liste[0][0],$val));
+            }
+
+            echo json_encode(array('success' => true, 'message' => "Creation du tag reussi", 'result' => $liste));
+        
+            
+        }catch(Exception $e){
+            echo json_encode(array('success' => false, 'message' => $e->getMessage()));
         }
-
-        echo json_encode(array('success' => true, 'message' => "Creation du tag reussi", 'result' => $liste));
-        
-    }catch(Exception $e){
-        echo json_encode(array('success' => false, 'message' => $e->getMessage(), 'result' => $liste));
     }
-    return $response;
+});
+
+$app->post('/insertMessage', function (Request $request, Response $response, array $args) use ($pdo) {
+    if(isset($_POST['listId']) && isset($_POST['idMessage'])){
+        try{
+            foreach(json_decode($_POST['listId']) as $val){
+                $contenu = $pdo->prepare('INSERT INTO tagmessage VALUES (?,?);');
+                $contenu->execute(array($val,$_POST['idMessage']));
+            }
+
+            echo json_encode(array('success' => true, 'message' => "Creation du tag reussi", 'result' => $liste));
+        
+            
+        }catch(Exception $e){
+            echo json_encode(array('success' => false, 'message' => $e->getMessage(), 'result' => $liste));
+        }
+    }
 });
 
 

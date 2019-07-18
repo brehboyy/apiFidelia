@@ -235,7 +235,7 @@ $app->post('/delete', function (Request $request, Response $response, array $arg
             $contenu = $pdo->prepare('DELETE FROM `modele_message` WHERE ID_Modele_Message=?');//->execute(array($name,$password));
             $contenu->execute(array($id));
 
-            echo json_encode(array('success' => true, "message" => $_POST['table']. ' supprimé'));
+            echo json_encode(array('success' => true, "message" => 'Message supprimé'));
         }catch(Exception $e){
             echo json_encode(array('success' => false, 'message' => $e->getMessage()));
         }
