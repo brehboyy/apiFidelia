@@ -71,6 +71,44 @@ $app->post('/delete', function (Request $request, Response $response, array $arg
     } 
 });
 
+$app->post('/updateTable', function (Request $request, Response $response, array $args) use ($pdo) {
+        //var_dump("Table : ".json_decode($_POST['table']));
+        $request = 'UPDATE `'.json_decode($_POST['table']).'` SET `';
+        $maxlistAttributs = count(json_decode($_POST['listAttributs']));
+        $listAttributs = json_decode($_POST['listAttributs']);
+        for ($i=0; $i < $maxlistAttributs; $i++) { 
+            if ($i == $maxlistAttributs-1) {
+                $request = $request . $listAttributs[$i]. '`= ? WHERE `'.json_decode($_POST['IdTable']).'`= ?' ;
+            }
+            else{
+                $request = $request . $listAttributs[$i]. '`= ?,`' ;
+            }
+        }
+        $maxlistValeurs = count(json_decode($_POST['listValeurs']));
+        $listValeurs = json_decode($_POST['listValeurs']);
+        $values = array();
+        for ($i=0; $i < $maxlistValeurs; $i++) { 
+            array_push($values ,$listValeurs[$i]);
+           /* if ($i == $maxlistValeurs-1) {
+                $values = $values . $listValeurs[$i]. ','.json_decode($_POST['ValIdTable'])   ;
+            }
+            else{
+                $values = $values . $listValeurs[$i]. ',' ;
+            }*/
+        }
+            array_push($values ,json_decode($_POST['ValIdTable']));
+        var_dump($request);
+        var_dump($values);
+        try{
+        $contenu = $pdo->prepare($request);
+        $contenu->execute($values);
+                    echo json_encode(array('success' => true, "message" => 'Message enregistré'));
+        }catch(Exception $e){
+            echo json_encode(array('success' => false, 'message' => $e->getMessage()));
+        }
+  
+});
+
 $app->post('/importCSV', function (Request $request, Response $response, array $args) use ($pdo) {
     if ( 0 < $_FILES['file']['error'] ) {
         echo json_encode(array('success' => false, 'message' => $_FILES['file']['error']));
@@ -107,8 +145,8 @@ $app->post('/importCSV', function (Request $request, Response $response, array $
             }
         
     }
+
     fclose($handle);
-       
 });
 
 $app->run();
