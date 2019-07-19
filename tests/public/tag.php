@@ -63,8 +63,6 @@ $app->post('/insertClient', function (Request $request, Response $response, arra
             $contenu = $pdo->prepare('SELECT LAST_INSERT_ID() AS LASTID;');
             $contenu->execute();
             $liste = $contenu->fetchAll();
-            $contenu = $pdo->prepare('DELETE FROM LAST_INSERT_ID() AS LASTID;');
-            $contenu->execute(PDO::FETCH_ASSOC);
 
             foreach(json_decode($_POST['listId']) as $val){
                 $contenu = $pdo->prepare('INSERT INTO tagclient VALUES (?,?);');

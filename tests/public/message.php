@@ -2,6 +2,8 @@
 
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 require '../../vendor/autoload.php';
 require '../../src/connexion.php';
@@ -52,6 +54,33 @@ $app->post('/insertMessage', function (Request $request, Response $response, arr
     }
 });
 
+$app->post('/insertPiecesjointes', function (Request $request, Response $response, array $args) use ($pdo) {
+    
+    if ( 0 < min($_FILES['fileToUpload']['error']) ) {
+        foreach($_FILES['fileToUpload']['error'] as $error)
+        echo json_encode(array('success' => false, 'message' => $error));
+    }
+    else {
+        try{
+            $contenu = $pdo->prepare("DELETE IGNORE FROM piece_jointe WHERE ID_modele_message_Piece_Jointe = ?");
+            $contenu->execute(array(explode("_", $_FILES['fileToUpload']['name'][0])[1]));
+
+            for($i = 0 ; $i < count($_FILES['fileToUpload']) ; $i++){
+                //$pathfileinfo = pathinfo($_FILES['fileToUpload']['tmp_name'][$i]);
+                //$filename = $pathfileinfo['dirname'].'/'.explode("_", $_FILES['fileToUpload']['name'][$i])[0];
+                copy($_FILES['fileToUpload']['tmp_name'][$i], '../../piecejointe/'.explode("_", $_FILES['fileToUpload']['name'][$i])[0]);
+                //rename ($_FILES['fileToUpload']['tmp_name'][$i], $filename);
+                //$blob = fopen($filename, 'rb');
+                $contenu = $pdo->prepare("INSERT INTO `piece_jointe` (`ID_Piece_Jointe`, `ID_modele_message_Piece_Jointe`, File_path_piece_jointe) VALUES (NULL, ?, ?)");
+                $contenu->execute(array(explode("_", $_FILES['fileToUpload']['name'][$i])[1], '../../piecejointe/'.explode("_", $_FILES['fileToUpload']['name'][$i])[0]));
+            }
+            echo json_encode(array('success' => true, "message" => 'pieces jointes enregistré'));
+        }catch(Exception $e){
+            echo json_encode(array('success' => false, 'message' => $e->getMessage()));
+        }
+    }
+});
+
 /// ++ Début SRO - V1 - 17.07.2019 InsertProgrammation
 $app->post('/insertProgrammation', function (Request $request, Response $response, array $args) use ($pdo) {
     if (isset($_POST['programmation']))
@@ -77,9 +106,8 @@ $app->post('/updateMessage', function (Request $request, Response $response, arr
             $contenu = $pdo->prepare('UPDATE `modele_message` SET `Titre_Modele_Message`= ?,`Corps_Modele_Message`= ?,`Template_Modele_Message`= ?,`Objet_Modele_Message`= ?,`Type_Modele_Message`= ?,`Categorie_Modele_Message`= ?  WHERE  `ID_Modele_Message`= ? ');
             $contenu->execute(array($message->Titre, $message->Corps, $message->Template, $message->Object, $message->Type, $message->Categorie, $message->Id)); 
             
-
-            $contenu = $pdo->prepare('DELETE FROM tagmessage WHERE ID_message_modele_message = ?');
-            $contenu->execute($message->Id); 
+            $contenu = $pdo->prepare('DELETE IGNORE FROM tagmessage WHERE ID_message_modele_message = ?');
+            $contenu->execute(array($message->Id)); 
             
             foreach($message->ListTag as $nomtag){
                 try{
@@ -325,23 +353,111 @@ $app->get('/sendMessage/{str}/', function (Request $request, Response $response,
     return $response;*/
 });
 
- $app->post('/envoyer', function (Request $request, Response $response, array $args) use ($pdo) {
+ $app->get('/envoyer', function (Request $request, Response $response, array $args) use ($pdo) {
     if(isset($_POST['Id'])){
+
+        $id = $args['Id'];
+        $sql = 'SELECT `Corps_Modele_Message`,`Objet_Modele_Message` FROM `modele_message` WHERE `ID_modele_message` = ?';
+        $contenu = $pdo->prepare($sql);
+        $contenu->execute(array($id));
+        $res = $contenu->fetchAll(PDO::FETCH_ASSOC);
+        $value = $res[0];
+        $html = $value['Corps_Modele_Message'];
+        $needle = "{{";
+        $lastPos = 0;
+        $positions = array();
+        $dirPositions = array();
+
+
+
+        while (($lastPos = strpos($html, $needle, $lastPos))!== false) {
+            $positions[] = $lastPos;
+            $lastPos = $lastPos + strlen($needle);
+        }
+        //On recupere le nom des balise correspondant
+        $liste = array();
+        for($i = 0 ; $i < count($positions) ; $i++){
+            $contenu = $pdo->prepare('SELECT `ID_Balise`,`Attribut_Balise`,`Nom_Balise`,`Table_Balise` FROM `balise` WHERE `Nom_Balise` = ?');
+            $contenu->execute(array(strtoupper(get_string_between(substr ( $html, $positions[$i], ($i == count($positions) - 1) ? strlen($html) - $positions[$i] : $positions[$i + 1] - $positions[$i] ), "{{", "}}"))));
+            $res = $contenu->fetchAll(PDO::FETCH_ASSOC);
+            array_push($liste, $res[0]);
+        }
+        $str = "";
+        $compt = 0;
+        $listResClient = array();
+        foreach($liste as $nomBalise => $valchamps){
+            //$str = str_replace('{{'.$valchamps['Nom_Balise'].'}}', $valchamps['Attribut_Balise'], $compt == 0 ? $value['Corps_Modele_Message'] : $str);
+            if($compt == 0){
+                $str = "REPLACE(Corps_Modele_Message,'{{".$valchamps['Nom_Balise']."}}',".$valchamps['Attribut_Balise'].")";
+            }else{
+                $str = "REPLACE(".$str.",'{{".$valchamps['Nom_Balise']."}}',".$valchamps['Attribut_Balise'].")";
+            }
+            $compt++;
+        }
+        if(strlen($str) > 0){
+            $sql = "SELECT DISTINCT ".$str." AS CorpsMessage, c.Nom_Client, c.Prenom_Client, c.Adresse_Mail_Client  FROM tagmessage tm INNER JOIN modele_message m ON tm.ID_message_modele_message = m.ID_Modele_Message INNER JOIN tagclient tc ON tm.ID_tag_tagmessage = tc.ID_Tag INNER JOIN client c ON tc.ID_Client = c.ID_Client WHERE m.ID_Modele_Message = ?";
+            $contenu = $pdo->prepare($sql);
+            $contenu->execute(array($id));
+            $listResClient = $contenu->fetchAll(PDO::FETCH_ASSOC);
+        }else{
+            $sql = "SELECT DISTINCT Corps_Modele_Message AS CorpsMessage, c.Nom_Client, c.Prenom_Client, c.Adresse_Mail_Client FROM tagmessage tm INNER JOIN modele_message m ON tm.ID_message_modele_message = m.ID_Modele_Message INNER JOIN tagclient tc ON tm.ID_tag_tagmessage = tc.ID_Tag INNER JOIN client c ON tc.ID_Client = c.ID_Client WHERE m.ID_Modele_Message = ?";
+            $contenu = $pdo->prepare($sql);
+            $contenu->execute(array($value["ID_Modele_Message"]));
+            $listResClient = $contenu->fetchAll(PDO::FETCH_ASSOC);
+        }
+
+
+        foreach($listResClient as $cle => $client){
+            
+            
+            try{
+                // Instantiation and passing `true` enables exceptions
+                $mail = new PHPMailer(true);
+                
+                var_dump($mail);
+                try {
+                    //Server settings
+                    $mail->SMTPDebug = 2;                                       // Enable verbose debug output
+                    $mail->isSMTP();                                            // Set mailer to use SMTP
+                    $mail->Host       = 'smtp.gmail.com';  // Specify main and backup SMTP servers
+                    $mail->SMTPAuth   = true;                                   // Enable SMTP authentication
+                    $mail->Username   = 'fideliialaval@gmail.com';                     // SMTP username
+                    $mail->Password   = 'BossGroup51';                               // SMTP password
+                    $mail->SMTPSecure = 'ssl';                                  // Enable TLS encryption, `ssl` also accepted
+                    $mail->Port       = 465;                                    // TCP port to connect to
+                    $mail->SMTPAutoTLS = false;
+                    //Recipients
+                    $mail->setFrom('fideliialaval@gmail.com', 'fidelia');
+                    $mail->addAddress($client['Adresse_Mail_Client'], $client['Nom_Client']." ".$client['Prenom_Client']);  //$client['Adresse_Mail_Client']  // Add a recipient
+                    $sql = "SELECT File_path_piece_jointe FROM piece_jointe pj WHERE ID_modele_message_Piece_Jointe = ?";
+                    
+                    $contenu = $pdo->prepare($sql);
+                    $contenu->execute(array($id));
+                    $listpj = $contenu->fetchAll(PDO::FETCH_ASSOC);
+
+
+
+                    foreach($listpj as $piece => $jointe){
+                        $mail->AddAttachment($jointe['File_path_piece_jointe'], basename($jointe['File_path_piece_jointe']).PHP_EOL);
+                    }
+                    // Content
+                    $mail->isHTML(true);                                // Set email format to HTML
+                    $mail->Subject = $value['Objet_Modele_Message'];
+                    $mail->Body    = $client['CorpsMessage'] ;
+                    //$mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+
+                    $mail->send();
+                    echo json_encode( array('success' => true, 'message' => 'Le message a ete envoye'));
+                } catch (Exception $e) {
+                    echo json_encode( array('success' => false, 'message' => $e->getMessage()));
+                }
+            
+            }catch(Exception $e){
+                echo json_encode( array('success' => false, 'message' => $e->getMessage()));
+            }
+        }
+
         // Fais ce que tu as à faire !
-    }
-    try{
-        $to      = 'personne@example.com';
-        $subject = 'le sujet';
-        $message = 'Bonjour !';
-        $headers = 'From: webmaster@example.com' . "\r\n" .
-        'Reply-To: webmaster@example.com' . "\r\n" .
-        'X-Mailer: PHP/' . phpversion();
-   
-        mail($to, $subject, $message, $headers);
-        $response = array('success' => true, 'message' => "Le mail a été envoyé");
-    
-    }catch(Exception $e){
-        $response = array('success' => false, 'message' => $e->getMessage());
     }
     return $response;
 });

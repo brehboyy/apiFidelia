@@ -72,8 +72,6 @@ $app->get('/sendMessageBirthday', function (Request $request, Response $response
                 }
                 $compt++;
             }
-
-            var_dump($value);
             if(strlen($str) > 0){
                 $sql = "SELECT ".$str." AS CorpsMessage FROM modele_message m INNER JOIN tagmessage tm ON tm.ID_message_modele_message = m.ID_Modele_Message INNER JOIN tagclient tc ON tc.ID_Tag = tm.ID_tag_tagmessage INNER JOIN client c ON c.ID_Client = tc.ID_Client INNER JOIN nourrisson n ON n.ID_Client_Nourrisson = c.ID_Client WHERE m.ID_Modele_Message = ?";
                 $contenu = $pdo->prepare($sql);
@@ -85,7 +83,6 @@ $app->get('/sendMessageBirthday', function (Request $request, Response $response
                 $contenu->execute(array($value["ID_Modele_Message"]));
                 $listResClient = $contenu->fetchAll(PDO::FETCH_ASSOC);
             }
-            var_dump($listResClient);
             try{
                 // Instantiation and passing `true` enables exceptions
                 $mail = new PHPMailer(true);
@@ -104,6 +101,14 @@ $app->get('/sendMessageBirthday', function (Request $request, Response $response
                     //Recipients
                     $mail->setFrom('fideliialaval@gmail.com', 'GAINDE');
                     $mail->addAddress($value['Adresse_Mail_Client'], $value['Nom_Client']." ".$value['Prenom_Client']);  //$client['Adresse_Mail_Client']  // Add a recipient
+
+                    $sql = "SELECT File_path_piece_jointe FROM piece_jointe pj WHERE ID_modele_message_Piece_Jointe = ?";
+                    $contenu = $pdo->prepare($sql);
+                    $contenu->execute(array($value["ID_Modele_Message"]));
+                    $listpj = $contenu->fetchAll(PDO::FETCH_ASSOC);
+                    foreach($listpj as $piece => $jointe){
+                        $mail->AddAttachment($jointe['File_path_piece_jointe'], basename($jointe['File_path_piece_jointe']).PHP_EOL);
+                    }
 
                     // Content
                     $mail->isHTML(true);                                // Set email format to HTML
@@ -207,7 +212,13 @@ $app->get('/sendMessageCommande', function (Request $request, Response $response
                     //Recipients
                     $mail->setFrom('fideliialaval@gmail.com', 'GAINDE');
                     $mail->addAddress($value['Adresse_Mail_Client'], $value['Nom_Client']." ".$value['Prenom_Client']);  //$client['Adresse_Mail_Client']  // Add a recipient
-
+                    $sql = "SELECT File_path_piece_jointe FROM piece_jointe pj WHERE ID_modele_message_Piece_Jointe = ?";
+                    $contenu = $pdo->prepare($sql);
+                    $contenu->execute(array($value["ID_Modele_Message"]));
+                    $listpj = $contenu->fetchAll(PDO::FETCH_ASSOC);
+                    foreach($listpj as $piece => $jointe){
+                        $mail->AddAttachment($jointe['File_path_piece_jointe'], basename($jointe['File_path_piece_jointe']).PHP_EOL);
+                    }
                     // Content
                     $mail->isHTML(true);                                // Set email format to HTML
                     $mail->Subject = $value['Objet_Modele_Message'];
@@ -282,12 +293,12 @@ $app->get('/sendMessage', function (Request $request, Response $response, array 
                 $compt++;
             }
             if(strlen($str) > 0){
-                $sql = "SELECT ".$str." AS CorpsMessage, c.Nom_Client, c.Prenom_Client, c.Adresse_Mail_Client  FROM tagmessage tm INNER JOIN modele_message m ON tm.ID_message_modele_message = m.ID_Modele_Message INNER JOIN tagclient tc ON tm.ID_tag_tagmessage = tc.ID_Tag INNER JOIN client c ON tc.ID_Client = c.ID_Client WHERE m.ID_Modele_Message = ?";
+                $sql = "SELECT DISTINCT ".$str." AS CorpsMessage, c.Nom_Client, c.Prenom_Client, c.Adresse_Mail_Client  FROM tagmessage tm INNER JOIN modele_message m ON tm.ID_message_modele_message = m.ID_Modele_Message INNER JOIN tagclient tc ON tm.ID_tag_tagmessage = tc.ID_Tag INNER JOIN client c ON tc.ID_Client = c.ID_Client WHERE m.ID_Modele_Message = ?";
                 $contenu = $pdo->prepare($sql);
                 $contenu->execute(array($value["ID_Modele_Message"]));
                 $listResClient = $contenu->fetchAll(PDO::FETCH_ASSOC);
             }else{
-                $sql = "SELECT Corps_Modele_Message AS CorpsMessage, c.Nom_Client, c.Prenom_Client, c.Adresse_Mail_Client FROM tagmessage tm INNER JOIN modele_message m ON tm.ID_message_modele_message = m.ID_Modele_Message INNER JOIN tagclient tc ON tm.ID_tag_tagmessage = tc.ID_Tag INNER JOIN client c ON tc.ID_Client = c.ID_Client WHERE m.ID_Modele_Message = ?";
+                $sql = "SELECT DISTINCT Corps_Modele_Message AS CorpsMessage, c.Nom_Client, c.Prenom_Client, c.Adresse_Mail_Client FROM tagmessage tm INNER JOIN modele_message m ON tm.ID_message_modele_message = m.ID_Modele_Message INNER JOIN tagclient tc ON tm.ID_tag_tagmessage = tc.ID_Tag INNER JOIN client c ON tc.ID_Client = c.ID_Client WHERE m.ID_Modele_Message = ?";
                 $contenu = $pdo->prepare($sql);
                 $contenu->execute(array($value["ID_Modele_Message"]));
                 $listResClient = $contenu->fetchAll(PDO::FETCH_ASSOC);
@@ -312,7 +323,13 @@ $app->get('/sendMessage', function (Request $request, Response $response, array 
                         //Recipients
                         $mail->setFrom('fideliialaval@gmail.com', 'GAINDE');
                         $mail->addAddress($client['Adresse_Mail_Client'], $client['Nom_Client']." ".$client['Prenom_Client']);  //$client['Adresse_Mail_Client']  // Add a recipient
-
+                        $sql = "SELECT File_path_piece_jointe FROM piece_jointe pj WHERE ID_modele_message_Piece_Jointe = ?";
+                        $contenu = $pdo->prepare($sql);
+                        $contenu->execute(array($value["ID_Modele_Message"]));
+                        $listpj = $contenu->fetchAll(PDO::FETCH_ASSOC);
+                        foreach($listpj as $piece => $jointe){
+                            $mail->AddAttachment($jointe['File_path_piece_jointe'], basename($jointe['File_path_piece_jointe']).PHP_EOL);
+                        }
                         // Content
                         $mail->isHTML(true);                                // Set email format to HTML
                         $mail->Subject = $value['Objet_Modele_Message'];
