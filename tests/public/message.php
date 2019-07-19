@@ -166,7 +166,7 @@ $app->post('/updateStatusMessage', function (Request $request, Response $respons
 
 $app->get('/getall', function (Request $request, Response $response, array $args) use ($pdo) {
     try{
-		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Template_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message FROM modele_message');//->execute(array($name,$password));
+		$contenu = $pdo->prepare('SELECT ID_Modele_Message, Titre_Modele_Message, Corps_Modele_Message, Template_Modele_Message, Objet_Modele_Message, Type_Modele_Message, Categorie_Modele_Message, Date_Modele_Message, Statut_Message FROM modele_message');//->execute(array($name,$password));
 		$contenu->execute();
         $liste = $contenu->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode(array('success' => true, 'message' => 'recuperation reussi', 'result' => $liste));
@@ -353,10 +353,10 @@ $app->get('/sendMessage/{str}/', function (Request $request, Response $response,
     return $response;*/
 });
 
- $app->get('/envoyer', function (Request $request, Response $response, array $args) use ($pdo) {
+ $app->post('/envoyer', function (Request $request, Response $response, array $args) use ($pdo) {
     if(isset($_POST['Id'])){
 
-        $id = $args['Id'];
+        $id = $_POST['Id'];
         $sql = 'SELECT `Corps_Modele_Message`,`Objet_Modele_Message` FROM `modele_message` WHERE `ID_modele_message` = ?';
         $contenu = $pdo->prepare($sql);
         $contenu->execute(array($id));
@@ -413,8 +413,6 @@ $app->get('/sendMessage/{str}/', function (Request $request, Response $response,
             try{
                 // Instantiation and passing `true` enables exceptions
                 $mail = new PHPMailer(true);
-                
-                var_dump($mail);
                 try {
                     //Server settings
                     $mail->SMTPDebug = 2;                                       // Enable verbose debug output
@@ -438,6 +436,7 @@ $app->get('/sendMessage/{str}/', function (Request $request, Response $response,
 
 
                     foreach($listpj as $piece => $jointe){
+                        var_dump(basename($jointe['File_path_piece_jointe']).PHP_EOL);
                         $mail->AddAttachment($jointe['File_path_piece_jointe'], basename($jointe['File_path_piece_jointe']).PHP_EOL);
                     }
                     // Content

@@ -1,0 +1,35 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Maths;Français;Physique;Anglais;;;Ex;Météo;Humidité;Vent;Chaleur;Tondre la pelouse;;;Cheveux;Taille;Poids;Crème sol.;Classement;;"Questions
+
+Exemple";Connaît l'école;A déjà eu un stagiaire;A embauché un étudiant;Verse la taxe à l'école;A participé à un forum ou un salon;"Conclusion 
+( accepte le RV ou non )"
+Simon;13;9;16;11;;;J1;Soleil;70;Oui;24;Oui;;E1;Blond;Moyenne;Léger;Non;1;;Entr. 1;Oui;Oui;Oui;Non;Oui;Oui
+Michel;8;12;11;16;;;J2;Soleil;90;Oui;27;Non;;E2;Blond;Grande;Moyen;Oui;0;;Entr. 2;Oui;Non;Non;Oui;Oui;Oui
+Léo;5;13;7;12;;;J3;Soleil;85;Non;29;Non;;E3;Brun;Petite;Moyen;Oui;0;;Entr. 3;Non;Non;Oui;Oui;Oui;Oui
+Tim;5;15;6;14;;;J4;Soleil;95;Non;22;Non;;E4;Blond;Petite;Moyen;Non;1;;Entr. 4;Oui;Non;Non;Non;Oui;Non
+Sophie;10;12;11;13;;;J5;Soleil;70;Non;21;Oui;;E5;Roux;Moyenne;Lourd;Non;1;;Entr. 5;Non;Non;Oui;Non;Oui;Non
+Annie;9;16;8;15;;;J6;Couvert;90;Oui;22;Oui;;E6;Brun;Grande;Lourd;Non;0;;Entr. 6;Non;Non;Oui;Non;Oui;Non
+Anne;16;14;19;17;;;J7;Couvert;70;Non;28;Oui;;E7;Brun;Moyenne;Lourd;Non;0;;;;;;;;
+Jeanne;8;8;11;9;;;J8;Couvert;70;Oui;18;Oui;;E8;Blond;Petite;Léger;Oui;0;;;;;;;;
+Marie;12;9;15;11;;;J9;Couvert;90;Non;27;Oui;;;;;;;;;;;;;;;
+Paule;14;12;16;12;;;J10;Pluie;90;Oui;22;Non;;;;;;;;;;;;;;;
+;;;;;;;J11;Pluie;70;Oui;19;Non;;;;;;;;;;;;;;;
+nbPommes;1;5;10;20;;;J12;Pluie;85;Non;24;Oui;;;;;;;;;;;;;;;
+surproduction;0;0;0;40;;;J13;Pluie;85;Non;20;Oui;;;;;;;;;;;;;;;
+punition;3;5;12;20;;;J14;Pluie;95;Non;21;Oui;;;;;;;;;;;;;;;
+hasard;10;10;10;10;;;;;;;;;;;;;;;;;;;;;;;
+privilégiés;35;0;0;5;;;;;;;;;;;;;;;;;;;;;;;
+classes;5;12;13;10;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+resultat;Lettres;Sciences;Economie;;;;;;;;;;;;;;;;;;;;;;;;
+mention;10;17;13;;;;;;;;;;;;;;;;;;;;;;;;
+SansMention;15;10;5;;;;;;;;;;;;;;;;;;;;;;;;
+recale;25;3;2;;;;;;;;;;;;;;;;;;;;;;;;

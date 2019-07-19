@@ -1,0 +1,4 @@
+"ID_Client","Nom_Client","Prenom_Client","CodePostal_Client","Numero_Adresse_Client","Type_Adresse_Client","Libelle_Adresse_Client","Ville_Client","Telephone_Client","Pays_Client","DateNaissance_Client","Adresse_Mail_Client","ID_Client_SIte_Web","Siret_Client"
+"7","Diarra","Ousmane","56100","1","Rue","Gabriel Faure","Lorient","0665044955","FRANCE","1996-03-16","ousmane.diarra1@outlook.fr","1","80295478500028"
+"8","Robin","Samson","53260","10","Parc","Des lila","Forcé","0000000000","FRANCE","1996-05-16","samsonrobin30@gmail.com","2","80295478500029"
+"9","Bachelier","Valentin","35000","5","Rue","Rannée","moussé","00000000000","France","1996-10-16","delasalle.sio.bachelier.v@gmail.com","3","8029547875028"
